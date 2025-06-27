@@ -19,6 +19,8 @@
             align-items: center;
             min-height: 100vh;
             overflow: hidden;
+            margin: 0;
+            padding: 10px;
         }
 
         .game-container {
@@ -28,6 +30,31 @@
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             overflow: hidden;
+            max-width: 100%;
+            max-height: 100vh;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            
+            .game-container {
+                border-radius: 10px;
+                border-width: 2px;
+            }
+        }
+
+        @media (orientation: landscape) and (max-height: 600px) {
+            body {
+                align-items: flex-start;
+                padding: 5px;
+            }
+            
+            .game-container {
+                margin-top: 5px;
+            }
         }
 
         #gameCanvas {
@@ -56,6 +83,13 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
         }
 
+        @media (max-width: 480px) {
+            .score {
+                font-size: 28px;
+                top: 15px;
+            }
+        }
+
         .author {
             position: absolute;
             bottom: 10px;
@@ -68,6 +102,16 @@
             padding: 5px 10px;
             border-radius: 15px;
             backdrop-filter: blur(5px);
+        }
+
+        @media (max-width: 480px) {
+            .author {
+                font-size: 10px;
+                padding: 3px 8px;
+                bottom: 5px;
+                left: 5px;
+                border-radius: 10px;
+            }
         }
 
         .game-over {
@@ -93,6 +137,18 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
         }
 
+        @media (max-width: 480px) {
+            .game-over h2 {
+                font-size: 32px;
+                margin-bottom: 15px;
+            }
+            
+            .game-over p {
+                font-size: 16px;
+                margin-bottom: 15px;
+            }
+        }
+
         .restart-btn {
             background: linear-gradient(45deg, #ff6b6b, #ffa500);
             color: white;
@@ -104,11 +160,20 @@
             pointer-events: all;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            touch-action: manipulation;
         }
 
         .restart-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        @media (max-width: 480px) {
+            .restart-btn {
+                padding: 12px 24px;
+                font-size: 16px;
+                border-radius: 20px;
+            }
         }
 
         .instructions {
@@ -120,6 +185,14 @@
             color: white;
             font-size: 14px;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        @media (max-width: 480px) {
+            .instructions {
+                font-size: 12px;
+                bottom: 50px;
+                padding: 0 10px;
+            }
         }
 
         .cloud {
@@ -224,8 +297,41 @@
         const pipeGap = 150;
         const pipeSpeed = 2;
 
+        // Initialize game
+        function initializeGame() {
+            // Make canvas responsive
+            const container = document.querySelector('.game-container');
+            const maxWidth = Math.min(400, window.innerWidth - 20);
+            const maxHeight = Math.min(600, window.innerHeight - 20);
+            
+            // Maintain aspect ratio
+            const aspectRatio = 400 / 600;
+            let canvasWidth, canvasHeight;
+            
+            if (maxWidth / maxHeight > aspectRatio) {
+                canvasHeight = maxHeight;
+                canvasWidth = canvasHeight * aspectRatio;
+            } else {
+                canvasWidth = maxWidth;
+                canvasHeight = canvasWidth / aspectRatio;
+            }
+            
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            canvas.style.width = canvasWidth + 'px';
+            canvas.style.height = canvasHeight + 'px';
+            
+            // Scale game elements proportionally
+            const scale = canvasWidth / 400;
+            bird.x = 80 * scale;
+            bird.y = canvas.height / 2;
+            bird.width = 25 * scale;
+            bird.height = 25 * scale;
+        }
+
         // Initialize high score display
         highScoreElement.textContent = highScore;
+        initializeGame();
 
         function drawBird() {
             ctx.save();
@@ -435,9 +541,22 @@
         });
 
         canvas.addEventListener('click', jump);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            jump();
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            initializeGame();
+        });
 
         // Prevent context menu on right click
         canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // Prevent default touch behaviors
+        document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+        document.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
 
         // Start the game loop
         gameLoop();
