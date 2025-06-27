@@ -161,9 +161,15 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
-        .restart-btn:hover {
+        .restart-btn:hover, .restart-btn:active {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.4);
         }
@@ -173,6 +179,8 @@
                 padding: 12px 24px;
                 font-size: 16px;
                 border-radius: 20px;
+                min-height: 44px;
+                min-width: 120px;
             }
         }
 
@@ -255,7 +263,7 @@
                 <h2>Game Over!</h2>
                 <p>Skor Anda: <span id="finalScore">0</span></p>
                 <p>Skor Tertinggi: <span id="highScore">0</span></p>
-                <button class="restart-btn" onclick="restartGame()">Main Lagi</button>
+                <button class="restart-btn" id="restartBtn">Main Lagi</button>
             </div>
             
             <div class="instructions" id="instructions">
@@ -272,6 +280,7 @@
         const finalScoreElement = document.getElementById('finalScore');
         const highScoreElement = document.getElementById('highScore');
         const instructionsElement = document.getElementById('instructions');
+        const restartBtn = document.getElementById('restartBtn');
 
         // Game variables
         let gameState = 'waiting'; // waiting, playing, gameOver
@@ -560,11 +569,34 @@
             }
         });
 
-        canvas.addEventListener('click', jump);
-        canvas.addEventListener('touchstart', (e) => {
+        canvas.addEventListener('click', (e) => {
             e.preventDefault();
             jump();
         });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            jump();
+        }, { passive: false });
+
+        // Restart button event listeners
+        restartBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            restartGame();
+        });
+
+        restartBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            restartGame();
+        }, { passive: false });
+
+        restartBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, { passive: false });
 
         // Handle window resize
         window.addEventListener('resize', () => {
@@ -574,9 +606,8 @@
         // Prevent context menu on right click
         canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
-        // Prevent default touch behaviors
-        document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
-        document.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+        // Prevent default touch behaviors on game area only
+        canvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
         // Start the game loop
         gameLoop();
