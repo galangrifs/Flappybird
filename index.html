@@ -367,17 +367,20 @@
         }
 
         function drawPipe(pipe) {
+            const scale = canvas.width / 400;
+            const scaledPipeWidth = pipeWidth * scale;
+            
             // Top pipe
             ctx.fillStyle = '#228B22';
-            ctx.fillRect(pipe.x, 0, pipeWidth, pipe.topHeight);
+            ctx.fillRect(pipe.x, 0, scaledPipeWidth, pipe.topHeight);
             
             // Bottom pipe
-            ctx.fillRect(pipe.x, pipe.topHeight + pipeGap, pipeWidth, canvas.height - pipe.topHeight - pipeGap);
+            ctx.fillRect(pipe.x, pipe.topHeight + pipeGap, scaledPipeWidth, canvas.height - pipe.topHeight - pipeGap);
             
             // Pipe caps
             ctx.fillStyle = '#32CD32';
-            ctx.fillRect(pipe.x - 5, pipe.topHeight - 20, pipeWidth + 10, 20);
-            ctx.fillRect(pipe.x - 5, pipe.topHeight + pipeGap, pipeWidth + 10, 20);
+            ctx.fillRect(pipe.x - 5 * scale, pipe.topHeight - 20 * scale, scaledPipeWidth + 10 * scale, 20 * scale);
+            ctx.fillRect(pipe.x - 5 * scale, pipe.topHeight + pipeGap, scaledPipeWidth + 10 * scale, 20 * scale);
         }
 
         function createPipe() {
@@ -394,14 +397,19 @@
 
         function updateBird() {
             if (gameState === 'playing') {
-                bird.velocity += bird.gravity;
+                const scale = canvas.width / 400;
+                const scaledGravity = bird.gravity * scale;
+                const scaledJumpPower = bird.jumpPower * scale;
+                
+                bird.velocity += scaledGravity;
                 bird.y += bird.velocity;
                 
                 // Rotation based on velocity
                 bird.rotation = Math.min(Math.max(bird.velocity * 0.05, -0.5), 0.8);
                 
                 // Check boundaries
-                if (bird.y + bird.height > canvas.height - 50 || bird.y < 0) {
+                const groundLevel = canvas.height * 0.9; // 90% of canvas height
+                if (bird.y + bird.height > groundLevel || bird.y < 0) {
                     gameOver();
                 }
             }
@@ -440,8 +448,11 @@
         }
 
         function checkCollision(bird, pipe) {
+            const scale = canvas.width / 400;
+            const scaledPipeWidth = pipeWidth * scale;
+            
             // Check if bird is within pipe x bounds
-            if (bird.x + bird.width > pipe.x && bird.x < pipe.x + pipeWidth) {
+            if (bird.x + bird.width > pipe.x && bird.x < pipe.x + scaledPipeWidth) {
                 // Check if bird hits top or bottom pipe
                 if (bird.y < pipe.topHeight || bird.y + bird.height > pipe.topHeight + pipeGap) {
                     return true;
@@ -454,13 +465,15 @@
             if (gameState === 'waiting') {
                 startGame();
             } else if (gameState === 'playing') {
-                bird.velocity = bird.jumpPower;
+                const scale = canvas.width / 400;
+                bird.velocity = bird.jumpPower * scale;
             }
         }
 
         function startGame() {
             gameState = 'playing';
-            bird.velocity = bird.jumpPower;
+            const scale = canvas.width / 400;
+            bird.velocity = bird.jumpPower * scale;
             instructionsElement.style.display = 'none';
         }
 
@@ -481,12 +494,19 @@
         function restartGame() {
             gameState = 'waiting';
             score = 0;
+            frameCount = 0;
+            
+            // Reset bird position and physics
+            const scale = canvas.width / 400;
+            bird.x = 80 * scale;
             bird.y = canvas.height / 2;
             bird.velocity = 0;
             bird.rotation = 0;
-            pipes = [];
-            frameCount = 0;
             
+            // Clear all pipes
+            pipes = [];
+            
+            // Reset UI
             scoreElement.textContent = '0';
             gameOverElement.style.display = 'none';
             instructionsElement.style.display = 'block';
